@@ -1,0 +1,138 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/quiz_question.dart';
+import '../state/quiz_provider.dart';
+
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Color(0xFF1E88E5),
+            Color(0xFF42A5F5),
+            Color(0xFF64B5F6),
+            Color(0xFF90CAF9),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          stops: [0.0, 0.3, 0.7, 1.0],
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text(
+            'Mind Match Quiz',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.8,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
+        body: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Big Logo
+                Image.asset(
+                  'assets/images/LOGO.png',
+                  height: 350,
+                  width: 350,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 5),
+                // START button
+                _MenuButton(
+                  text: 'START',
+                  color: const Color(0xFF0D47A1),
+                  onPressed: () {
+                    Provider.of<QuizProvider>(
+                      context,
+                      listen: false,
+                    ).startNewQuiz(
+                      questionCount: 5,
+                      difficulty: QuizDifficulty.medium,
+                    );
+                    Navigator.pushNamed(context, '/quiz');
+                  },
+                ),
+                const SizedBox(height: 10),
+                // DIFFICULTY button
+                _MenuButton(
+                  text: 'Difficulty',
+                  color: const Color(0xFF00695C),
+                  onPressed: () => Navigator.pushNamed(context, '/difficulty'),
+                ),
+                const SizedBox(height: 18),
+                // SETTINGS button
+                _MenuButton(
+                  text: 'Settings',
+                  color: const Color(0xFF5E35B1),
+                  onPressed: () => Navigator.pushNamed(context, '/settings'),
+                ),
+                const SizedBox(height: 18),
+                // EXIT button
+                _MenuButton(
+                  text: 'EXIT',
+                  color: const Color(0xFFC62828),
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, '/menu'),
+                ),
+                const SizedBox(height: 50),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MenuButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final VoidCallback onPressed;
+
+  const _MenuButton({
+    required this.text,
+    required this.color,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 260,
+      height: 58,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Colors.white, width: 2),
+          ),
+          shadowColor: Colors.black45,
+          elevation: 8,
+          textStyle: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.0,
+          ),
+        ),
+        onPressed: onPressed,
+        child: Text(text),
+      ),
+    );
+  }
+}
