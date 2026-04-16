@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../models/quiz_question.dart';
+import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -8,6 +10,8 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bestScore = context.read<LocalStorageService>().getBestScore();
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -43,15 +47,22 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Big Logo
                 Image.asset(
                   'assets/images/LOGO.png',
                   height: 350,
                   width: 350,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 5),
-                // START button
+                const SizedBox(height: 10),
+                Text(
+                  'Best Offline Score: $bestScore',
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 14),
                 _MenuButton(
                   text: 'START',
                   color: const Color(0xFF0D47A1),
@@ -67,26 +78,36 @@ class HomeScreen extends StatelessWidget {
                   },
                 ),
                 const SizedBox(height: 10),
-                // DIFFICULTY button
                 _MenuButton(
-                  text: 'Difficulty',
+                  text: 'DIFFICULTY',
                   color: const Color(0xFF00695C),
                   onPressed: () => Navigator.pushNamed(context, '/difficulty'),
                 ),
                 const SizedBox(height: 18),
-                // SETTINGS button
                 _MenuButton(
-                  text: 'Settings',
+                  text: 'SCORE HISTORY',
+                  color: const Color(0xFF6A1B9A),
+                  onPressed: () => Navigator.pushNamed(context, '/history'),
+                ),
+                const SizedBox(height: 18),
+                _MenuButton(
+                  text: 'LEADERBOARD',
+                  color: const Color(0xFF8E24AA),
+                  onPressed: () => Navigator.pushNamed(context, '/leaderboard'),
+                ),
+                const SizedBox(height: 18),
+                _MenuButton(
+                  text: 'SETTINGS',
                   color: const Color(0xFF5E35B1),
                   onPressed: () => Navigator.pushNamed(context, '/settings'),
                 ),
                 const SizedBox(height: 18),
-                // EXIT button
                 _MenuButton(
                   text: 'EXIT',
                   color: const Color(0xFFC62828),
-                  onPressed: () =>
-                      Navigator.pushReplacementNamed(context, '/menu'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
                 ),
                 const SizedBox(height: 50),
               ],

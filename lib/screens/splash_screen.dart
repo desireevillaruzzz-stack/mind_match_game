@@ -15,17 +15,22 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
+
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 2),
     );
+
     _scaleAnimation = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutBack,
     );
+
     _controller.forward();
+
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, '/menu');
+      if (!mounted) return;
+      Navigator.pushReplacementNamed(context, '/home');
     });
   }
 
@@ -41,10 +46,10 @@ class _SplashScreenState extends State<SplashScreen>
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            Color(0xFF1E88E5), // Vibrant Blue
-            Color(0xFF42A5F5), // Lighter Blue
-            Color(0xFF64B5F6), // Softer Light Blue
-            Color(0xFF90CAF9), // Very Light Blue
+            Color(0xFF1E88E5),
+            Color(0xFF42A5F5),
+            Color(0xFF64B5F6),
+            Color(0xFF90CAF9),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -56,7 +61,7 @@ class _SplashScreenState extends State<SplashScreen>
           scale: _scaleAnimation,
           child: Image.asset(
             'assets/images/LOGO.png',
-            height: 280, // Much bigger logo
+            height: 280,
             width: 280,
             fit: BoxFit.contain,
           ),

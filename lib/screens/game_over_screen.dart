@@ -1,13 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../models/score_record.dart';
+import '../services/local_storage_service.dart';
+import '../services/leaderboard_service.dart';
 import '../state/quiz_provider.dart';
 
-class GameOverScreen extends StatelessWidget {
+class GameOverScreen extends StatefulWidget {
   const GameOverScreen({super.key});
 
   @override
+  State<GameOverScreen> createState() => _GameOverScreenState();
+}
+
+class _GameOverScreenState extends State<GameOverScreen> {
+  bool _saved = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_saved) {
+      _saveResult();
+      _saved = true;
+    }
+  }
+
+  Future<void> _saveResult() async {
+    final quizProvider = context.read<QuizProvider>();
+    final storage = context.read<LocalStorageService>();
+    final leaderboardService = context.read<LeaderboardService>();
+
+    final settings = storage.getAppSettings();
+    final player = await storage.ensurePlayerProfile();
+
+    final totalQuestions = quizProvider.questions.length;
+    final score = quizProvider.score;
+    final wrongAnswers = totalQuestions - score;
+
+    await storage.addScoreRecord(
+      ScoreRecord(
+        score: score,
+        difficulty: settings.selectedDifficulty,
+        correctAnswers: score,
+        wrongAnswers: wrongAnswers,
+        playedAt: DateTime.now().toIso8601String(),
+      ),
+    );
+
+    final bestScore = storage.getBestScore();
+
+    await leaderboardService.uploadBestScore(
+      playerId: player.playerId,
+      username: player.username,
+      highScore: bestScore,
+      difficulty: settings.selectedDifficulty,
+    );
+  }
+
+  String _getPerformanceMessage(int score, int totalQuestions) {
+    if (score == totalQuestions) {
+      return 'Perfect Score!';
+    } else if (score >= (totalQuestions * 0.8)) {
+      return 'Excellent Work!';
+    } else if (score >= (totalQuestions * 0.6)) {
+      return 'Good Job!';
+    } else if (score >= (totalQuestions * 0.4)) {
+      return 'Nice Try!';
+    } else {
+      return 'Keep Practicing!';
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final quizProvider = Provider.of<QuizProvider>(context);
+    final quizProvider = context.watch<QuizProvider>();
+    final storage = context.read<LocalStorageService>();
+
+    final score = quizProvider.score;
+    final totalQuestions = quizProvider.questions.length;
+    final bestScore = storage.getBestScore();
 
     return Container(
       decoration: const BoxDecoration(
@@ -25,126 +96,106 @@ class GameOverScreen extends StatelessWidget {
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          title: const Text(
+            'GAME OVER',
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.2,
+            ),
+          ),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+        ),
         body: Center(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Big Logo
-                Image.asset(
-                  'assets/images/LOGO.png',
-                  height: 200,
-                  width: 200,
-                  fit: BoxFit.contain,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 2,
                 ),
-                const SizedBox(height: 30),
-                // Game Over Title
-                const Text(
-                  'GAME OVER',
-                  style: TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 2.0,
-                  ),
-                ),
-                const SizedBox(height: 40),
-                // Score Card
-                Container(
-                  width: 300,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
-                      width: 2,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.emoji_events, size: 90, color: Colors.amber),
+                  const SizedBox(height: 20),
+                  Text(
+                    _getPerformanceMessage(score, totalQuestions),
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
                   ),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Your Score',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white70,
-                          fontWeight: FontWeight.w500,
+                  const SizedBox(height: 20),
+                  Text(
+                    'Your Score',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    '$score / $totalQuestions',
+                    style: const TextStyle(
+                      fontSize: 42,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Best Offline Score: $bestScore',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: 220,
+                    height: 56,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D47A1),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          side: const BorderSide(color: Colors.white, width: 2),
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      Text(
-                        '${quizProvider.score}/${quizProvider.totalQuestions}',
-                        style: const TextStyle(
-                          fontSize: 56,
+                        elevation: 8,
+                        textStyle: const TextStyle(
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.greenAccent,
                           letterSpacing: 1.0,
                         ),
                       ),
-                      const SizedBox(height: 10),
-                      Text(
-                        '${quizProvider.getScorePercentage().toStringAsFixed(1)}%',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 30),
-                // Performance Feedback
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Text(
-                    quizProvider.getPerformanceFeedback(),
-                    style: const TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      height: 1.5,
+                      onPressed: () {
+                        quizProvider.resetQuiz();
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          '/home',
+                          (route) => false,
+                        );
+                      },
+                      child: const Text('BACK TO HOME'),
                     ),
-                    textAlign: TextAlign.center,
                   ),
-                ),
-                const SizedBox(height: 50),
-                // Try Again Button
-                SizedBox(
-                  width: 260,
-                  height: 62,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFC62828),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(22),
-                        side: const BorderSide(color: Colors.white, width: 3),
-                      ),
-                      shadowColor: Colors.black45,
-                      elevation: 10,
-                      textStyle: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1.2,
-                      ),
-                    ),
-                    onPressed: () {
-                      quizProvider.resetQuiz();
-                      Navigator.pushReplacementNamed(context, '/home');
-                    },
-                    child: const Text('TRY AGAIN'),
-                  ),
-                ),
-                const SizedBox(height: 60),
-              ],
+                ],
+              ),
             ),
           ),
         ),

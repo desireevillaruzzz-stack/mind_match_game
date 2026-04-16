@@ -27,6 +27,8 @@ class QuizProvider extends ChangeNotifier {
 
   int get totalQuestions => _currentQuiz.length;
 
+  get questions => null;
+
   /// Initialize a new quiz
   void startNewQuiz({
     int questionCount = 5,
