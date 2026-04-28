@@ -3,8 +3,9 @@ import 'package:provider/provider.dart';
 
 import '../models/app_settings.dart';
 import '../models/player_profile.dart';
-import '../services/local_storage_service.dart';
 import '../services/audio_service.dart';
+import '../services/haptic_service.dart';
+import '../services/local_storage_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -17,11 +18,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _musicOn = true;
   bool _soundOn = true;
   bool _vibrationOn = true;
-  String _selectedDifficulty = 'medium';
   bool _isLoaded = false;
 
   String _playerId = '';
   String _createdAt = '';
+  String _selectedDifficulty = 'medium';
   late final TextEditingController _usernameController;
 
   @override
@@ -36,6 +37,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!_isLoaded) {
       _loadData();
     }
+    context
+        .read<AudioService>()
+        .ensureBackgroundMusicPlaying(forceRestart: true);
   }
 
   Future<void> _loadData() async {
@@ -60,6 +64,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _saveSettings() async {
     final storage = context.read<LocalStorageService>();
     final audioService = context.read<AudioService>();
+    final hapticService = context.read<HapticService>();
     final trimmedUsername = _usernameController.text.trim();
 
     await storage.saveAppSettings(
@@ -84,6 +89,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
 
     await audioService.updateMusicSetting(_musicOn);
+    await audioService.updateSoundSetting(_soundOn);
+    await hapticService.updateVibrationSetting(_vibrationOn);
+
+    if (_musicOn) {
+      await audioService.ensureBackgroundMusicPlaying(forceRestart: true);
+    }
+
+    if (_soundOn) {
+      await audioService.playClickSound();
+    }
+
+    if (_vibrationOn) {
+      await hapticService.lightTap();
+    }
 
     if (!mounted) return;
 
@@ -95,9 +114,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _resetGame() async {
     final storage = context.read<LocalStorageService>();
     final audioService = context.read<AudioService>();
+    final hapticService = context.read<HapticService>();
 
     await storage.clearAllData();
     await audioService.updateMusicSetting(true);
+    await audioService.updateSoundSetting(true);
+    await hapticService.updateVibrationSetting(true);
 
     if (!mounted) return;
 
@@ -111,9 +133,108 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _usernameController.text = 'Guest';
     });
 
+    await audioService.ensureBackgroundMusicPlaying(forceRestart: true);
+    await audioService.playClickSound();
+    await hapticService.lightTap();
+
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Offline data reset')),
     );
+  }
+
+  Future<void> _toggleMusic(bool value) async {
+    final storage = context.read<LocalStorageService>();
+    final audioService = context.read<AudioService>();
+    final hapticService = context.read<HapticService>();
+
+    setState(() {
+      _musicOn = value;
+    });
+
+    await audioService.updateMusicSetting(value);
+
+    await storage.saveAppSettings(
+      AppSettings(
+        musicOn: _musicOn,
+        soundOn: _soundOn,
+        vibrationOn: _vibrationOn,
+        selectedDifficulty: _selectedDifficulty,
+      ),
+    );
+
+    if (_vibrationOn) {
+      await hapticService.lightTap();
+    }
+
+    if (_musicOn) {
+      await audioService.ensureBackgroundMusicPlaying(forceRestart: true);
+    }
+  }
+
+  Future<void> _toggleSound(bool value) async {
+    final storage = context.read<LocalStorageService>();
+    final audioService = context.read<AudioService>();
+    final hapticService = context.read<HapticService>();
+
+    setState(() {
+      _soundOn = value;
+    });
+
+    await audioService.updateSoundSetting(value);
+
+    await storage.saveAppSettings(
+      AppSettings(
+        musicOn: _musicOn,
+        soundOn: _soundOn,
+        vibrationOn: _vibrationOn,
+        selectedDifficulty: _selectedDifficulty,
+      ),
+    );
+
+    if (_musicOn) {
+      await audioService.ensureBackgroundMusicPlaying(forceRestart: true);
+    }
+
+    if (_vibrationOn) {
+      await hapticService.lightTap();
+    }
+
+    if (_soundOn) {
+      await audioService.playClickSound();
+    }
+  }
+
+  Future<void> _toggleVibration(bool value) async {
+    final storage = context.read<LocalStorageService>();
+    final hapticService = context.read<HapticService>();
+    final audioService = context.read<AudioService>();
+
+    setState(() {
+      _vibrationOn = value;
+    });
+
+    await hapticService.updateVibrationSetting(value);
+
+    await storage.saveAppSettings(
+      AppSettings(
+        musicOn: _musicOn,
+        soundOn: _soundOn,
+        vibrationOn: _vibrationOn,
+        selectedDifficulty: _selectedDifficulty,
+      ),
+    );
+
+    if (_musicOn) {
+      await audioService.ensureBackgroundMusicPlaying(forceRestart: true);
+    }
+
+    if (_soundOn) {
+      await audioService.playClickSound();
+    }
+
+    if (value) {
+      await hapticService.lightTap();
+    }
   }
 
   @override
@@ -203,64 +324,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         icon: Icons.music_note,
                         label: 'Music',
                         value: _musicOn,
-                        onChanged: (v) => setState(() => _musicOn = v),
+                        onChanged: _toggleMusic,
                       ),
                       const SizedBox(height: 14),
                       _SwitchTile(
                         icon: Icons.volume_up,
                         label: 'Sound',
                         value: _soundOn,
-                        onChanged: (v) => setState(() => _soundOn = v),
+                        onChanged: _toggleSound,
                       ),
                       const SizedBox(height: 14),
                       _SwitchTile(
                         icon: Icons.vibration,
                         label: 'Vibration',
                         value: _vibrationOn,
-                        onChanged: (v) => setState(() => _vibrationOn = v),
-                      ),
-                      const SizedBox(height: 20),
-                      Container(
-                        width: 280,
-                        padding: const EdgeInsets.all(18),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 2,
-                          ),
-                        ),
-                        child: DropdownButtonHideUnderline(
-                          child: DropdownButton<String>(
-                            value: _selectedDifficulty,
-                            dropdownColor: const Color(0xFF1565C0),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                            iconEnabledColor: Colors.white,
-                            items: const [
-                              DropdownMenuItem(
-                                value: 'easy',
-                                child: Text('Easy'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'medium',
-                                child: Text('Medium'),
-                              ),
-                              DropdownMenuItem(
-                                value: 'hard',
-                                child: Text('Hard'),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              if (value == null) return;
-                              setState(() => _selectedDifficulty = value);
-                            },
-                          ),
-                        ),
+                        onChanged: _toggleVibration,
                       ),
                       const SizedBox(height: 24),
                       _SettingsButton(
@@ -330,7 +408,7 @@ class _SwitchTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: Colors.greenAccent,
+            activeThumbColor: Colors.greenAccent,
             activeTrackColor: Colors.white30,
           ),
         ],

@@ -3,16 +3,32 @@ import 'package:provider/provider.dart';
 
 import '../models/app_settings.dart';
 import '../models/quiz_question.dart';
+import '../services/audio_service.dart';
 import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
 
-class DifficultyScreen extends StatelessWidget {
+class DifficultyScreen extends StatefulWidget {
   const DifficultyScreen({super.key});
+
+  @override
+  State<DifficultyScreen> createState() => _DifficultyScreenState();
+}
+
+class _DifficultyScreenState extends State<DifficultyScreen> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context
+        .read<AudioService>()
+        .ensureBackgroundMusicPlaying(forceRestart: true);
+  }
 
   Future<void> _startQuiz({
     required BuildContext context,
     required String difficultyName,
     required QuizDifficulty difficultyEnum,
+    required int questionCount,
+    bool survivalMode = false,
   }) async {
     final storage = context.read<LocalStorageService>();
     final currentSettings = storage.getAppSettings();
@@ -29,9 +45,10 @@ class DifficultyScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     context.read<QuizProvider>().startNewQuiz(
-      questionCount: 5,
-      difficulty: difficultyEnum,
-    );
+          questionCount: questionCount,
+          difficulty: difficultyEnum,
+          survivalMode: survivalMode,
+        );
 
     Navigator.pushNamed(context, '/quiz');
   }
@@ -81,32 +98,36 @@ class DifficultyScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
                 _DifficultyButton(
-                  text: 'EASY',
+                  text: 'EASY (10)',
                   color: const Color(0xFF2E7D32),
                   onPressed: () => _startQuiz(
                     context: context,
                     difficultyName: 'easy',
                     difficultyEnum: QuizDifficulty.easy,
+                    questionCount: 10,
                   ),
                 ),
                 const SizedBox(height: 18),
                 _DifficultyButton(
-                  text: 'MEDIUM',
+                  text: 'MEDIUM (15)',
                   color: const Color(0xFFEF6C00),
                   onPressed: () => _startQuiz(
                     context: context,
                     difficultyName: 'medium',
                     difficultyEnum: QuizDifficulty.medium,
+                    questionCount: 15,
                   ),
                 ),
                 const SizedBox(height: 18),
                 _DifficultyButton(
-                  text: 'HARD',
+                  text: 'HARD (SURVIVAL)',
                   color: const Color(0xFFC62828),
                   onPressed: () => _startQuiz(
                     context: context,
                     difficultyName: 'hard',
                     difficultyEnum: QuizDifficulty.hard,
+                    questionCount: 1,
+                    survivalMode: true,
                   ),
                 ),
                 const SizedBox(height: 30),

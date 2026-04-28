@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/score_record.dart';
-import '../services/local_storage_service.dart';
+import '../services/audio_service.dart';
 import '../services/leaderboard_service.dart';
+import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
 
 class GameOverScreen extends StatefulWidget {
@@ -20,9 +21,12 @@ class _GameOverScreenState extends State<GameOverScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_saved) {
-      _saveResult();
       _saved = true;
+      _saveResult();
     }
+    context
+        .read<AudioService>()
+        .ensureBackgroundMusicPlaying(forceRestart: true);
   }
 
   Future<void> _saveResult() async {
@@ -33,9 +37,9 @@ class _GameOverScreenState extends State<GameOverScreen> {
     final settings = storage.getAppSettings();
     final player = await storage.ensurePlayerProfile();
 
-    final totalQuestions = quizProvider.questions.length;
+    final totalQuestions = quizProvider.totalQuestions;
     final score = quizProvider.score;
-    final wrongAnswers = totalQuestions - score;
+    final wrongAnswers = (totalQuestions - score).clamp(0, totalQuestions);
 
     await storage.addScoreRecord(
       ScoreRecord(
@@ -58,17 +62,11 @@ class _GameOverScreenState extends State<GameOverScreen> {
   }
 
   String _getPerformanceMessage(int score, int totalQuestions) {
-    if (score == totalQuestions) {
-      return 'Perfect Score!';
-    } else if (score >= (totalQuestions * 0.8)) {
-      return 'Excellent Work!';
-    } else if (score >= (totalQuestions * 0.6)) {
-      return 'Good Job!';
-    } else if (score >= (totalQuestions * 0.4)) {
-      return 'Nice Try!';
-    } else {
-      return 'Keep Practicing!';
-    }
+    if (score >= 30) return '🔥 Legendary run!';
+    if (score >= 20) return '🌟 Amazing!';
+    if (score >= 10) return '👏 Great job!';
+    if (score == totalQuestions && totalQuestions > 0) return 'Perfect Score!';
+    return 'Keep Practicing!';
   }
 
   @override
@@ -77,7 +75,7 @@ class _GameOverScreenState extends State<GameOverScreen> {
     final storage = context.read<LocalStorageService>();
 
     final score = quizProvider.score;
-    final totalQuestions = quizProvider.questions.length;
+    final totalQuestions = quizProvider.totalQuestions;
     final bestScore = storage.getBestScore();
 
     return Container(
@@ -148,7 +146,7 @@ class _GameOverScreenState extends State<GameOverScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    '$score / $totalQuestions',
+                    '$score',
                     style: const TextStyle(
                       fontSize: 42,
                       fontWeight: FontWeight.bold,
@@ -183,8 +181,15 @@ class _GameOverScreenState extends State<GameOverScreen> {
                           letterSpacing: 1.0,
                         ),
                       ),
-                      onPressed: () {
+                      onPressed: () async {
+                        await context
+                            .read<AudioService>()
+                            .ensureBackgroundMusicPlaying(forceRestart: true);
+
                         quizProvider.resetQuiz();
+
+                        if (!context.mounted) return;
+
                         Navigator.pushNamedAndRemoveUntil(
                           context,
                           '/home',

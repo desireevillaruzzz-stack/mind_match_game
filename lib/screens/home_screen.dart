@@ -2,15 +2,60 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/quiz_question.dart';
+import '../services/audio_service.dart';
 import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  QuizDifficulty _mapDifficulty(String value) {
+    switch (value.toLowerCase()) {
+      case 'easy':
+        return QuizDifficulty.easy;
+      case 'hard':
+        return QuizDifficulty.hard;
+      case 'medium':
+      default:
+        return QuizDifficulty.medium;
+    }
+  }
+
+  int _questionCountForDifficulty(String value) {
+    switch (value.toLowerCase()) {
+      case 'easy':
+        return 10;
+      case 'medium':
+        return 15;
+      case 'hard':
+        return 1; // survival
+      default:
+        return 10;
+    }
+  }
+
+  bool _isSurvivalMode(String value) {
+    return value.toLowerCase() == 'hard';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    context
+        .read<AudioService>()
+        .ensureBackgroundMusicPlaying(forceRestart: true);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final bestScore = context.read<LocalStorageService>().getBestScore();
+    final storage = context.read<LocalStorageService>();
+    final bestScore = storage.getBestScore();
+    final selectedDifficulty = storage.getAppSettings().selectedDifficulty;
 
     return Container(
       decoration: const BoxDecoration(
@@ -62,18 +107,29 @@ class HomeScreen extends StatelessWidget {
                     color: Colors.white,
                   ),
                 ),
+                const SizedBox(height: 8),
+                Text(
+                  'Selected Difficulty: ${selectedDifficulty.toUpperCase()}',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white70,
+                  ),
+                ),
                 const SizedBox(height: 14),
                 _MenuButton(
                   text: 'START',
                   color: const Color(0xFF0D47A1),
                   onPressed: () {
-                    Provider.of<QuizProvider>(
-                      context,
-                      listen: false,
-                    ).startNewQuiz(
-                      questionCount: 5,
-                      difficulty: QuizDifficulty.medium,
-                    );
+                    final difficultyEnum = _mapDifficulty(selectedDifficulty);
+
+                    context.read<QuizProvider>().startNewQuiz(
+                          questionCount:
+                              _questionCountForDifficulty(selectedDifficulty),
+                          difficulty: difficultyEnum,
+                          survivalMode: _isSurvivalMode(selectedDifficulty),
+                        );
+
                     Navigator.pushNamed(context, '/quiz');
                   },
                 ),

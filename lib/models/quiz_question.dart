@@ -70,4 +70,6 @@ class QuizQuestion {
       categoryColor: Color(json['categoryColor']),
     );
   }
+
+  Null get options => null;
 }
