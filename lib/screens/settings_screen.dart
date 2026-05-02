@@ -247,116 +247,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1E88E5),
-            Color(0xFF42A5F5),
-            Color(0xFF64B5F6),
-            Color(0xFF90CAF9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
+        image: DecorationImage(
+          image: AssetImage('assets/images/settings.bg.jpg'),
+          fit: BoxFit.cover,
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'SETTINGS',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.2,
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF1E88E5).withOpacity(0.75),
+              const Color(0xFF42A5F5).withOpacity(0.60),
+              const Color(0xFF90CAF9).withOpacity(0.45),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          foregroundColor: Colors.white,
-          centerTitle: true,
         ),
-        body: !_isLoaded
-            ? const Center(
-                child: CircularProgressIndicator(color: Colors.white),
-              )
-            : Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        'assets/images/LOGO.png',
-                        height: 260,
-                        width: 260,
-                        fit: BoxFit.contain,
-                      ),
-                      const SizedBox(height: 24),
-                      Container(
-                        width: 280,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 6,
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text(
+              'SETTINGS',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+              ),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            foregroundColor: Colors.white,
+            centerTitle: true,
+          ),
+          body: !_isLoaded
+              ? const Center(
+                  child: CircularProgressIndicator(color: Colors.white),
+                )
+              : Center(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Image.asset(
+                          'assets/images/LOGO.png',
+                          height: 230,
+                          width: 230,
+                          fit: BoxFit.contain,
                         ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: Colors.white.withOpacity(0.3),
-                            width: 2,
+                        const SizedBox(height: 20),
+                        Container(
+                          width: 280,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 18,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.55),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _usernameController,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                            decoration: const InputDecoration(
+                              icon: Icon(Icons.person, color: Colors.white),
+                              hintText: 'Enter username',
+                              hintStyle: TextStyle(color: Colors.white70),
+                              border: InputBorder.none,
+                            ),
                           ),
                         ),
-                        child: TextField(
-                          controller: _usernameController,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 18,
-                          ),
-                          decoration: const InputDecoration(
-                            icon: Icon(Icons.person, color: Colors.white),
-                            hintText: 'Enter username',
-                            hintStyle: TextStyle(color: Colors.white70),
-                            border: InputBorder.none,
-                          ),
+                        const SizedBox(height: 14),
+                        _SwitchTile(
+                          icon: Icons.music_note,
+                          label: 'Music',
+                          value: _musicOn,
+                          onChanged: _toggleMusic,
                         ),
-                      ),
-                      const SizedBox(height: 14),
-                      _SwitchTile(
-                        icon: Icons.music_note,
-                        label: 'Music',
-                        value: _musicOn,
-                        onChanged: _toggleMusic,
-                      ),
-                      const SizedBox(height: 14),
-                      _SwitchTile(
-                        icon: Icons.volume_up,
-                        label: 'Sound',
-                        value: _soundOn,
-                        onChanged: _toggleSound,
-                      ),
-                      const SizedBox(height: 14),
-                      _SwitchTile(
-                        icon: Icons.vibration,
-                        label: 'Vibration',
-                        value: _vibrationOn,
-                        onChanged: _toggleVibration,
-                      ),
-                      const SizedBox(height: 24),
-                      _SettingsButton(
-                        text: 'SAVE SETTINGS',
-                        color: const Color(0xFF00695C),
-                        onPressed: _saveSettings,
-                      ),
-                      const SizedBox(height: 16),
-                      _SettingsButton(
-                        text: 'RESET GAME',
-                        color: const Color(0xFFE65100),
-                        onPressed: _resetGame,
-                      ),
-                      const SizedBox(height: 40),
-                    ],
+                        const SizedBox(height: 14),
+                        _SwitchTile(
+                          icon: Icons.volume_up,
+                          label: 'Sound',
+                          value: _soundOn,
+                          onChanged: _toggleSound,
+                        ),
+                        const SizedBox(height: 14),
+                        _SwitchTile(
+                          icon: Icons.vibration,
+                          label: 'Vibration',
+                          value: _vibrationOn,
+                          onChanged: _toggleVibration,
+                        ),
+                        const SizedBox(height: 24),
+                        _SettingsButton(
+                          text: 'SAVE SETTINGS',
+                          onPressed: _saveSettings,
+                        ),
+                        const SizedBox(height: 16),
+                        _SettingsButton(
+                          text: 'RESET GAME',
+                          onPressed: _resetGame,
+                        ),
+                        const SizedBox(height: 40),
+                      ],
+                    ),
                   ),
                 ),
-              ),
+        ),
       ),
     );
   }
@@ -384,8 +388,8 @@ class _SwitchTile extends StatelessWidget {
         color: Colors.white.withOpacity(0.15),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
-          width: 2,
+          color: Colors.white.withOpacity(0.55),
+          width: 1.5,
         ),
       ),
       child: Row(
@@ -408,7 +412,7 @@ class _SwitchTile extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: Colors.greenAccent,
+            activeThumbColor: Colors.white,
             activeTrackColor: Colors.white30,
           ),
         ],
@@ -419,12 +423,10 @@ class _SwitchTile extends StatelessWidget {
 
 class _SettingsButton extends StatelessWidget {
   final String text;
-  final Color color;
   final VoidCallback onPressed;
 
   const _SettingsButton({
     required this.text,
-    required this.color,
     required this.onPressed,
   });
 
@@ -435,13 +437,17 @@ class _SettingsButton extends StatelessWidget {
       height: 56,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: Colors.white.withOpacity(0.18),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.white, width: 2),
-          ),
+          shadowColor: Colors.black45,
           elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(
+              color: Colors.white.withOpacity(0.6),
+              width: 1.5,
+            ),
+          ),
           textStyle: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,

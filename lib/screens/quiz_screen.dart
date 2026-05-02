@@ -58,25 +58,60 @@ class _QuizScreenState extends State<QuizScreen> {
     }
   }
 
+  Widget _background({required Widget child}) {
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/skysakura.bg.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF1E88E5).withOpacity(0.75),
+              const Color(0xFF42A5F5).withOpacity(0.6),
+              const Color(0xFF90CAF9).withOpacity(0.45),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: child,
+      ),
+    );
+  }
+
+  ButtonStyle _glassButtonStyle() {
+    return ElevatedButton.styleFrom(
+      backgroundColor: Colors.white.withOpacity(0.18),
+      foregroundColor: Colors.white,
+      disabledBackgroundColor: Colors.white.withOpacity(0.08),
+      disabledForegroundColor: Colors.white54,
+      elevation: 8,
+      shadowColor: Colors.black45,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: Colors.white.withOpacity(0.6),
+          width: 1.5,
+        ),
+      ),
+      textStyle: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final quizProvider = context.watch<QuizProvider>();
 
     if (!quizProvider.hasQuestions) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF1E88E5),
-              Color(0xFF42A5F5),
-              Color(0xFF64B5F6),
-              Color(0xFF90CAF9),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
+      return _background(
         child: Scaffold(
           backgroundColor: Colors.transparent,
           appBar: AppBar(
@@ -85,9 +120,15 @@ class _QuizScreenState extends State<QuizScreen> {
             foregroundColor: Colors.white,
           ),
           body: Center(
-            child: ElevatedButton(
-              onPressed: () => Navigator.pushReplacementNamed(context, '/home'),
-              child: const Text('Back to Home'),
+            child: SizedBox(
+              width: 230,
+              height: 55,
+              child: ElevatedButton(
+                style: _glassButtonStyle(),
+                onPressed: () =>
+                    Navigator.pushReplacementNamed(context, '/home'),
+                child: const Text('BACK TO HOME'),
+              ),
             ),
           ),
         ),
@@ -103,21 +144,9 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     final currentQuestion = quizProvider.currentQuestion;
+
     if (currentQuestion == null) {
-      return Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xFF1E88E5),
-              Color(0xFF42A5F5),
-              Color(0xFF64B5F6),
-              Color(0xFF90CAF9),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            stops: [0.0, 0.3, 0.7, 1.0],
-          ),
-        ),
+      return _background(
         child: const Scaffold(
           backgroundColor: Colors.transparent,
           body: Center(
@@ -139,20 +168,7 @@ class _QuizScreenState extends State<QuizScreen> {
       _ => Colors.redAccent,
     };
 
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1E88E5),
-            Color(0xFF42A5F5),
-            Color(0xFF64B5F6),
-            Color(0xFF90CAF9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
-        ),
-      ),
+    return _background(
       child: Scaffold(
         backgroundColor: Colors.transparent,
         appBar: AppBar(
@@ -177,8 +193,8 @@ class _QuizScreenState extends State<QuizScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 12.0,
+                  horizontal: 16,
+                  vertical: 12,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -189,11 +205,11 @@ class _QuizScreenState extends State<QuizScreen> {
                         vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.18),
                         borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 2,
+                          color: Colors.white.withOpacity(0.55),
+                          width: 1.5,
                         ),
                       ),
                       child: Text(
@@ -211,7 +227,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 child: Row(
                   children: [
                     const SizedBox(width: 20),
@@ -237,7 +253,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(20.0),
+                padding: const EdgeInsets.all(20),
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(
@@ -245,8 +261,12 @@ class _QuizScreenState extends State<QuizScreen> {
                     horizontal: 20,
                   ),
                   decoration: BoxDecoration(
-                    color: currentQuestion.categoryColor,
-                    borderRadius: BorderRadius.circular(20),
+                    color: Colors.white.withOpacity(0.16),
+                    borderRadius: BorderRadius.circular(22),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.55),
+                      width: 1.5,
+                    ),
                     boxShadow: const [
                       BoxShadow(
                         color: Colors.black26,
@@ -254,10 +274,6 @@ class _QuizScreenState extends State<QuizScreen> {
                         offset: Offset(0, 6),
                       ),
                     ],
-                    border: Border.all(
-                      color: Colors.white30,
-                      width: 2,
-                    ),
                   ),
                   child: Center(
                     child: Text(
@@ -279,34 +295,21 @@ class _QuizScreenState extends State<QuizScreen> {
                   itemCount: currentQuestion.choices.length,
                   itemBuilder: (context, index) {
                     final choice = currentQuestion.choices[index];
+
                     return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
                       child: SizedBox(
                         width: double.infinity,
                         height: 58,
                         child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00BCD4),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: const BorderSide(
-                                color: Colors.white,
-                                width: 2,
-                              ),
-                            ),
-                            shadowColor: Colors.black45,
-                            elevation: 8,
-                            textStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                          style: _glassButtonStyle(),
                           onPressed: _answerLocked
                               ? null
                               : () => _handleAnswer(choice),
-                          child: Text(choice),
+                          child: Text(
+                            choice,
+                            textAlign: TextAlign.center,
+                          ),
                         ),
                       ),
                     );

@@ -25,16 +25,33 @@ dependencies:
   # Firebase
   firebase_core: ^4.1.1
   cloud_firestore: ^6.0.1
+  firebase_auth: ^6.1.0
 
   # Audio
   audioplayers: ^6.6.0
+
   # Vibration
   vibration: ^3.1.7
+
+  # Image upload
+  image_picker: ^1.0.7
+  http: ^1.2.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/app_icon.png"
+
+  # (para mas maganda sa Android adaptive icon)
+  adaptive_icon_background: "#1E88E5"
+  adaptive_icon_foreground: "assets/images/app_icon.png"
 
 flutter:
   uses-material-design: true
@@ -45,3 +62,6 @@ flutter:
     - assets/audio/click.mp3
     - assets/audio/correct.mp3
     - assets/audio/wrong.mp3
+    - assets/images/skysakura.bg.jpg
+    - assets/images/difficulty.bg.jpg
+    - assets/images/settings.bg.jpg

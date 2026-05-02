@@ -1,33 +1,33 @@
 import 'package:flutter/material.dart';
 
-class BackgroundGradient extends StatelessWidget {
+class AppBackground extends StatelessWidget {
   final Widget child;
-  const BackgroundGradient({required this.child, super.key});
+
+  const AppBackground({super.key, required this.child});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFF1E88E5), // Vibrant Blue
-            Color(0xFF42A5F5), // Lighter Blue
-            Color(0xFF64B5F6), // Softer Light Blue
-            Color(0xFF90CAF9), // Very Light Blue
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          image: AssetImage('assets/images/skysakura.bg.jpg'),
+          fit: BoxFit.cover,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF1E88E5).withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
       ),
-      child: child,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1E88E5).withOpacity(0.75),
+              Color(0xFF42A5F5).withOpacity(0.6),
+              Color(0xFF90CAF9).withOpacity(0.45),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: child,
+      ),
     );
   }
 }

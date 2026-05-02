@@ -17,6 +17,10 @@ import 'services/haptic_service.dart';
 import 'services/leaderboard_service.dart';
 import 'services/local_storage_service.dart';
 import 'state/quiz_provider.dart';
+import 'screens/login_screen.dart';
+import 'screens/signup_screen.dart';
+import 'services/auth_service.dart';
+import 'screens/profile_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +48,7 @@ Future<void> main() async {
         Provider<LeaderboardService>(create: (_) => LeaderboardService()),
         Provider<AudioService>.value(value: audioService),
         Provider<HapticService>.value(value: hapticService),
+        Provider<AuthService>(create: (_) => AuthService()),
       ],
       child: const MindMatchQuizApp(),
     ),
@@ -104,6 +109,9 @@ class _MindMatchQuizAppState extends State<MindMatchQuizApp>
         '/gameover': (context) => const GameOverScreen(),
         '/history': (context) => const ScoreHistoryScreen(),
         '/leaderboard': (context) => const LeaderboardScreen(),
+        '/login': (context) => const LoginScreen(),
+        '/signup': (context) => const SignupScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }

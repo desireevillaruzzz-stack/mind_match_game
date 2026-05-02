@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 
 import '../models/quiz_question.dart';
 import '../services/audio_service.dart';
+import '../services/auth_service.dart';
 import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
+import '../screens/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,7 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
       case 'medium':
         return 15;
       case 'hard':
-        return 1; // survival
+        return 1;
       default:
         return 10;
     }
@@ -41,6 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _isSurvivalMode(String value) {
     return value.toLowerCase() == 'hard';
+  }
+
+  void _openSettings() {
+    Navigator.pushNamed(context, '/settings');
   }
 
   @override
@@ -51,6 +57,23 @@ class _HomeScreenState extends State<HomeScreen> {
         .ensureBackgroundMusicPlaying(forceRestart: true);
   }
 
+  Future<void> _logout() async {
+    await context.read<AuthService>().logout();
+
+    if (!mounted) return;
+
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+  }
+
+  Future<void> _openProfile() async {
+    await Navigator.pushNamed(context, '/profile');
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final storage = context.read<LocalStorageService>();
@@ -59,114 +82,168 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1E88E5),
-            Color(0xFF42A5F5),
-            Color(0xFF64B5F6),
-            Color(0xFF90CAF9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
+        image: DecorationImage(
+          image: AssetImage('assets/images/skysakura.bg.jpg'),
+          fit: BoxFit.cover,
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'Mind Match Quiz',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF1E88E5).withOpacity(0.75),
+              const Color(0xFF42A5F5).withOpacity(0.6),
+              const Color(0xFF90CAF9).withOpacity(0.45),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          foregroundColor: Colors.white,
-          centerTitle: true,
         ),
-        body: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset(
-                  'assets/images/LOGO.png',
-                  height: 350,
-                  width: 350,
-                  fit: BoxFit.contain,
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Best Offline Score: $bestScore',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Selected Difficulty: ${selectedDifficulty.toUpperCase()}',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                _MenuButton(
-                  text: 'START',
-                  color: const Color(0xFF0D47A1),
-                  onPressed: () {
-                    final difficultyEnum = _mapDifficulty(selectedDifficulty);
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text(
+              'Mind Match Quiz',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            foregroundColor: Colors.white,
+            centerTitle: true,
+          ),
+          body: Center(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  /// 👤 PROFILE HEADER
+                  FutureBuilder<Map<String, dynamic>?>(
+                    future: context.read<AuthService>().getCurrentUserProfile(),
+                    builder: (context, snapshot) {
+                      final data = snapshot.data;
+                      final username = data?['username'] ?? 'Player';
+                      final avatar = data?['avatar'] ?? '';
 
-                    context.read<QuizProvider>().startNewQuiz(
-                          questionCount:
-                              _questionCountForDifficulty(selectedDifficulty),
-                          difficulty: difficultyEnum,
-                          survivalMode: _isSurvivalMode(selectedDifficulty),
-                        );
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        child: InkWell(
+                          onTap: _openProfile,
+                          child: Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 32,
+                                backgroundColor: Colors.white,
+                                backgroundImage: avatar.isNotEmpty
+                                    ? NetworkImage(avatar)
+                                    : null,
+                                child: avatar.isEmpty
+                                    ? const Icon(Icons.person,
+                                        size: 35, color: Color(0xFF1E88E5))
+                                    : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  username,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              const Icon(Icons.edit, color: Colors.white70),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
 
-                    Navigator.pushNamed(context, '/quiz');
-                  },
-                ),
-                const SizedBox(height: 10),
-                _MenuButton(
-                  text: 'DIFFICULTY',
-                  color: const Color(0xFF00695C),
-                  onPressed: () => Navigator.pushNamed(context, '/difficulty'),
-                ),
-                const SizedBox(height: 18),
-                _MenuButton(
-                  text: 'SCORE HISTORY',
-                  color: const Color(0xFF6A1B9A),
-                  onPressed: () => Navigator.pushNamed(context, '/history'),
-                ),
-                const SizedBox(height: 18),
-                _MenuButton(
-                  text: 'LEADERBOARD',
-                  color: const Color(0xFF8E24AA),
-                  onPressed: () => Navigator.pushNamed(context, '/leaderboard'),
-                ),
-                const SizedBox(height: 18),
-                _MenuButton(
-                  text: 'SETTINGS',
-                  color: const Color(0xFF5E35B1),
-                  onPressed: () => Navigator.pushNamed(context, '/settings'),
-                ),
-                const SizedBox(height: 18),
-                _MenuButton(
-                  text: 'EXIT',
-                  color: const Color(0xFFC62828),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                const SizedBox(height: 50),
-              ],
+                  ///  LOGO
+                  Image.asset(
+                    'assets/images/LOGO.png',
+                    height: 260,
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Text(
+                    'Best Offline Score: $bestScore',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  Text(
+                    'Selected Difficulty: ${selectedDifficulty.toUpperCase()}',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: Colors.white70,
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  _MenuButton(
+                    text: 'START',
+                    onPressed: () {
+                      final difficultyEnum = _mapDifficulty(selectedDifficulty);
+
+                      context.read<QuizProvider>().startNewQuiz(
+                            questionCount:
+                                _questionCountForDifficulty(selectedDifficulty),
+                            difficulty: difficultyEnum,
+                            survivalMode: _isSurvivalMode(selectedDifficulty),
+                          );
+
+                      Navigator.pushNamed(context, '/quiz');
+                    },
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  _MenuButton(
+                    text: 'DIFFICULTY',
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/difficulty'),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  _MenuButton(
+                    text: 'SCORE HISTORY',
+                    onPressed: () => Navigator.pushNamed(context, '/history'),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  _MenuButton(
+                    text: 'LEADERBOARD',
+                    onPressed: () =>
+                        Navigator.pushNamed(context, '/leaderboard'),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  _MenuButton(
+                    text: 'SETTINGS',
+                    onPressed: _openSettings,
+                  ),
+                  const SizedBox(height: 10),
+
+                  _MenuButton(
+                    text: 'LOG OUT',
+                    onPressed: _logout,
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
+              ),
             ),
           ),
         ),
@@ -175,14 +252,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+/// 🔘 GLASS BUTTON
 class _MenuButton extends StatelessWidget {
   final String text;
-  final Color color;
   final VoidCallback onPressed;
 
   const _MenuButton({
     required this.text,
-    required this.color,
     required this.onPressed,
   });
 
@@ -190,24 +266,27 @@ class _MenuButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox(
       width: 260,
-      height: 58,
+      height: 55,
       child: ElevatedButton(
+        onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: Colors.white.withOpacity(0.18),
           foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.white, width: 2),
-          ),
-          shadowColor: Colors.black45,
           elevation: 8,
+          shadowColor: Colors.black45,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: BorderSide(
+              color: Colors.white.withOpacity(0.6),
+              width: 1.5,
+            ),
+          ),
           textStyle: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.0,
           ),
         ),
-        onPressed: onPressed,
         child: Text(text),
       ),
     );

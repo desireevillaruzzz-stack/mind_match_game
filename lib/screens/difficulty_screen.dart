@@ -57,80 +57,64 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1E88E5),
-            Color(0xFF42A5F5),
-            Color(0xFF64B5F6),
-            Color(0xFF90CAF9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
+        image: DecorationImage(
+          image: AssetImage('assets/images/difficulty.bg.jpg'),
+          fit: BoxFit.cover,
         ),
       ),
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          title: const Text(
-            'SELECT DIFFICULTY',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.1,
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1E88E5).withOpacity(0.75),
+              Color(0xFF42A5F5).withOpacity(0.6),
+              Color(0xFF90CAF9).withOpacity(0.45),
+            ],
           ),
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          foregroundColor: Colors.white,
-          centerTitle: true,
         ),
-        body: Center(
-          child: SingleChildScrollView(
+        child: Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            title: const Text('SELECT DIFFICULTY'),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),
+          body: Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
                   'assets/images/LOGO.png',
-                  height: 250,
-                  width: 250,
+                  height: 300,
+                  width: 300,
                   fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 24),
-                _DifficultyButton(
-                  text: 'EASY (10)',
-                  color: const Color(0xFF2E7D32),
-                  onPressed: () => _startQuiz(
+                const SizedBox(height: 20),
+                _btn(context, "EASY (10)", Colors.green, () {
+                  _startQuiz(
                     context: context,
                     difficultyName: 'easy',
                     difficultyEnum: QuizDifficulty.easy,
                     questionCount: 10,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _DifficultyButton(
-                  text: 'MEDIUM (15)',
-                  color: const Color(0xFFEF6C00),
-                  onPressed: () => _startQuiz(
+                  );
+                }),
+                _btn(context, "MEDIUM (15)", Colors.orange, () {
+                  _startQuiz(
                     context: context,
                     difficultyName: 'medium',
                     difficultyEnum: QuizDifficulty.medium,
                     questionCount: 15,
-                  ),
-                ),
-                const SizedBox(height: 18),
-                _DifficultyButton(
-                  text: 'HARD (SURVIVAL)',
-                  color: const Color(0xFFC62828),
-                  onPressed: () => _startQuiz(
+                  );
+                }),
+                _btn(context, "HARD (SURVIVAL)", Colors.red, () {
+                  _startQuiz(
                     context: context,
                     difficultyName: 'hard',
                     difficultyEnum: QuizDifficulty.hard,
                     questionCount: 1,
                     survivalMode: true,
-                  ),
-                ),
-                const SizedBox(height: 30),
+                  );
+                }),
               ],
             ),
           ),
@@ -138,42 +122,31 @@ class _DifficultyScreenState extends State<DifficultyScreen> {
       ),
     );
   }
-}
 
-class _DifficultyButton extends StatelessWidget {
-  final String text;
-  final Color color;
-  final VoidCallback onPressed;
-
-  const _DifficultyButton({
-    required this.text,
-    required this.color,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 260,
-      height: 58,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          foregroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-            side: const BorderSide(color: Colors.white, width: 2),
+  Widget _btn(
+      BuildContext context, String text, Color color, VoidCallback onPressed) {
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: SizedBox(
+        width: 260,
+        height: 55,
+        child: ElevatedButton(
+          onPressed: onPressed,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white.withOpacity(0.18),
+            foregroundColor: Colors.white,
+            elevation: 8,
+            shadowColor: Colors.black45,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(22),
+              side: BorderSide(
+                color: Colors.white.withOpacity(0.6),
+                width: 1.5,
+              ),
+            ),
           ),
-          shadowColor: Colors.black45,
-          elevation: 8,
-          textStyle: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1.0,
-          ),
+          child: Text(text),
         ),
-        onPressed: onPressed,
-        child: Text(text),
       ),
     );
   }

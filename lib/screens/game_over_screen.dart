@@ -20,13 +20,15 @@ class _GameOverScreenState extends State<GameOverScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+
     if (!_saved) {
       _saved = true;
       _saveResult();
     }
-    context
-        .read<AudioService>()
-        .ensureBackgroundMusicPlaying(forceRestart: true);
+
+    context.read<AudioService>().ensureBackgroundMusicPlaying(
+          forceRestart: true,
+        );
   }
 
   Future<void> _saveResult() async {
@@ -35,7 +37,7 @@ class _GameOverScreenState extends State<GameOverScreen> {
     final leaderboardService = context.read<LeaderboardService>();
 
     final settings = storage.getAppSettings();
-    final player = await storage.ensurePlayerProfile();
+    await storage.ensurePlayerProfile();
 
     final totalQuestions = quizProvider.totalQuestions;
     final score = quizProvider.score;
@@ -51,21 +53,26 @@ class _GameOverScreenState extends State<GameOverScreen> {
       ),
     );
 
-    final bestScore = storage.getBestScore();
+    final profile = storage.getPlayerProfile();
 
-    await leaderboardService.uploadBestScore(
-      playerId: player.playerId,
-      username: player.username,
-      highScore: bestScore,
-      difficulty: settings.selectedDifficulty,
-    );
+    try {
+      await leaderboardService.uploadBestScore(
+        username: profile.username,
+        highScore: score,
+        difficulty: settings.selectedDifficulty,
+      );
+    } catch (e) {
+      debugPrint('Leaderboard upload failed: $e');
+    }
   }
 
   String _getPerformanceMessage(int score, int totalQuestions) {
     if (score >= 30) return '🔥 Legendary run!';
     if (score >= 20) return '🌟 Amazing!';
     if (score >= 10) return '👏 Great job!';
-    if (score == totalQuestions && totalQuestions > 0) return 'Perfect Score!';
+    if (score == totalQuestions && totalQuestions > 0) {
+      return 'Perfect Score!';
+    }
     return 'Keep Practicing!';
   }
 
@@ -125,7 +132,11 @@ class _GameOverScreenState extends State<GameOverScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.emoji_events, size: 90, color: Colors.amber),
+                  const Icon(
+                    Icons.emoji_events,
+                    size: 90,
+                    color: Colors.amber,
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     _getPerformanceMessage(score, totalQuestions),
@@ -172,7 +183,10 @@ class _GameOverScreenState extends State<GameOverScreen> {
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),
-                          side: const BorderSide(color: Colors.white, width: 2),
+                          side: const BorderSide(
+                            color: Colors.white,
+                            width: 2,
+                          ),
                         ),
                         elevation: 8,
                         textStyle: const TextStyle(

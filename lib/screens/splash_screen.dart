@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -27,11 +28,21 @@ class _SplashScreenState extends State<SplashScreen>
     );
 
     _controller.forward();
+    _navigateNext();
+  }
 
-    Future.delayed(const Duration(seconds: 3), () {
-      if (!mounted) return;
+  Future<void> _navigateNext() async {
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) {
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
       Navigator.pushReplacementNamed(context, '/home');
-    });
+    }
   }
 
   @override
@@ -42,28 +53,31 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Color(0xFF1E88E5),
-            Color(0xFF42A5F5),
-            Color(0xFF64B5F6),
-            Color(0xFF90CAF9),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          stops: [0.0, 0.3, 0.7, 1.0],
+    return Scaffold(
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFF1E88E5),
+              Color(0xFF42A5F5),
+              Color(0xFF64B5F6),
+              Color(0xFF90CAF9),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
-      ),
-      child: Center(
-        child: ScaleTransition(
-          scale: _scaleAnimation,
-          child: Image.asset(
-            'assets/images/LOGO.png',
-            height: 280,
-            width: 280,
-            fit: BoxFit.contain,
+        child: Center(
+          child: ScaleTransition(
+            scale: _scaleAnimation,
+            child: Image.asset(
+              'assets/images/LOGO.png',
+              height: 260,
+              width: 260,
+              fit: BoxFit.contain,
+            ),
           ),
         ),
       ),
