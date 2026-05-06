@@ -6,6 +6,7 @@ import '../services/audio_service.dart';
 import '../services/leaderboard_service.dart';
 import '../services/local_storage_service.dart';
 import '../state/quiz_provider.dart';
+import '../services/auth_service.dart';
 
 class GameOverScreen extends StatefulWidget {
   const GameOverScreen({super.key});
@@ -53,17 +54,13 @@ class _GameOverScreenState extends State<GameOverScreen> {
       ),
     );
 
-    final profile = storage.getPlayerProfile();
+    final username = await context.read<AuthService>().getCurrentUsername();
 
-    try {
-      await leaderboardService.uploadBestScore(
-        username: profile.username,
-        highScore: score,
-        difficulty: settings.selectedDifficulty,
-      );
-    } catch (e) {
-      debugPrint('Leaderboard upload failed: $e');
-    }
+    await leaderboardService.uploadBestScore(
+      username: username,
+      highScore: score,
+      difficulty: settings.selectedDifficulty,
+    );
   }
 
   String _getPerformanceMessage(int score, int totalQuestions) {

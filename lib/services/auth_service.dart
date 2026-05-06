@@ -6,6 +6,32 @@ class AuthService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   User? get currentUser => _auth.currentUser;
+  Future<String> getCurrentUsername() async {
+    final user = _auth.currentUser;
+    if (user == null) return 'Guest';
+
+    final doc = await _firestore.collection('users').doc(user.uid).get();
+
+    if (doc.exists) {
+      final data = doc.data();
+      return data?['username']?.toString() ?? 'Player';
+    }
+
+    return user.displayName ?? 'Player';
+  }
+
+  Future<void> updateUsername(String username) async {
+    final user = _auth.currentUser;
+    if (user == null) return;
+
+    await user.updateDisplayName(username.trim());
+
+    await _firestore.collection('users').doc(user.uid).set({
+      'username': username.trim(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    }, SetOptions(merge: true));
+  }
+
   Future<void> updateAvatarUrl(String avatarUrl) async {
     final user = _auth.currentUser;
     if (user == null) return;

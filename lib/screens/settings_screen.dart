@@ -6,6 +6,7 @@ import '../models/player_profile.dart';
 import '../services/audio_service.dart';
 import '../services/haptic_service.dart';
 import '../services/local_storage_service.dart';
+import '../services/auth_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -46,6 +47,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final storage = context.read<LocalStorageService>();
     final settings = storage.getAppSettings();
     final player = await storage.ensurePlayerProfile();
+    final firebaseUsername =
+        await context.read<AuthService>().getCurrentUsername();
 
     if (!mounted) return;
 
@@ -56,7 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _selectedDifficulty = settings.selectedDifficulty;
       _playerId = player.playerId;
       _createdAt = player.createdAt;
-      _usernameController.text = player.username;
+      _usernameController.text = firebaseUsername;
       _isLoaded = true;
     });
   }
@@ -75,6 +78,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         selectedDifficulty: _selectedDifficulty,
       ),
     );
+    await context.read<AuthService>().updateUsername(
+          trimmedUsername.isEmpty ? 'Guest' : trimmedUsername,
+        );
 
     await storage.savePlayerProfile(
       PlayerProfile(
